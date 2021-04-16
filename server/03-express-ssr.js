@@ -13,12 +13,12 @@ app.get('/', async (req, res) => {
             }
         }
     });
-    try{
-        const html = await renderer.renderToString(app);
+    renderer.renderToString(app).then(html => {
         res.send(html);
-    } catch(err) {
+        
+    }).catch(err =>{
         res.status(500).send('Internal Server Error');
-    };
+    });
 
 })
 
