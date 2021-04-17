@@ -13,6 +13,11 @@ export default {
   name: 'Home',
   components: {
     HelloWorld
+  },
+  asyncData({store, route}) {
+    console.log(route);
+    return store.dispatch('getCounter')
   }
+
 }
 </script>

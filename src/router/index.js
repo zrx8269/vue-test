@@ -20,8 +20,10 @@ const routes = [
   }
 ]
 
-const router = new VueRouter({
-  routes
-})
-
-export default router
+// 工厂函数， 每次请求返回一个Router实例,不是单例
+export function createRouter() {
+  return new VueRouter({
+    mode: 'history',
+    routes
+  })
+}
