@@ -1,5 +1,8 @@
 // node
 const resolve = dir => require('path').join(__dirname, dir);
+
+console.log(process.env.foo); // bar
+console.log(process.env.VUE_APP_DONG); // dong
 module.exports = {
     publicPath: '/best-practice',
     devServer: {

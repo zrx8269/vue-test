@@ -17,6 +17,8 @@
 <script>
 import SvgIcon from './components/SvgIcon.vue'
 // import '@/icons/svg/wx.svg'
+console.log(process.env.foo); // undefined
+console.log(process.env.VUE_APP_DONG); // dong
 export default {
   components: { SvgIcon },
   
