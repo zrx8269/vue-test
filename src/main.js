@@ -8,6 +8,9 @@ import './icons'
 
 import './permission'
 
+import vPermission from './directives/permission'
+Vue.directive('permission', vPermission);
+
 Vue.config.productionTip = false
 
 new Vue({
