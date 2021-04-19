@@ -6,6 +6,8 @@ import router from './router'
 import store from './store'
 import './icons'
 
+import './permission'
+
 Vue.config.productionTip = false
 
 new Vue({
