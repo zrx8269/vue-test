@@ -4,13 +4,14 @@
         <div id="app">{{counter}}</div>
         <script src="kvue.js"></script>
         <script>
-            var app = new Vue({
+            var app = new KVue({
                 el: '#app',
                 data: {
                     counter: 1
                 }
             });
             setInterval(() => {
+                // app.$data.counter++;
                 app.counter++
             }, 1000);
         </script>
