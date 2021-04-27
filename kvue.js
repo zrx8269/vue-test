@@ -1,3 +1,4 @@
+// 对象响应式原理
 function defineReactive(obj, prop, val) {
     // val有可能是对象
     observe(val);
