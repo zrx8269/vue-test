@@ -1,17 +1,27 @@
 // 对象响应式原理
 function defineReactive(obj, prop, val) {
+    // 利用闭包
+
     // val有可能是对象
     observe(val);
+
+    // 没执行一次defineReactive，就会创建一个Dep的实例
+    // prop与Dep一对一
+    const dep = new Dep();
     Object.defineProperty(obj, prop, {
         get(){
             console.log("get");
+            Dep.target && dep.addDep((Dep.target))
             return val;
         },
         set(newVal) {
             if(newVal !== val) {
                 console.log("set", newVal);
                 observe(newVal);
-                val = newVal
+                val = newVal;
+
+                // 通知更新
+                dep.notify();
             }
         }
     })
@@ -121,18 +131,29 @@ class Compile {
 
     // 文本指令
     text(node, exp) {
-        node.textContent = this.$vm[exp]
+        // node.textContent = this.$vm[exp];
+        this.update(node, exp, 'text')
     }
 
     html(node, exp) {
-        node.innerHTML = this.$vm[exp]
+        // node.innerHTML = this.$vm[exp];
+        this.update(node, exp, 'html')
+    }
+
+    htmlUpdater(node, value) {
+        node.innerHTML = value;
+    }
+
+    textUpdater(node, value) {
+        node.textContent = value;
     }
 
     // 插值文本编译
     compileText(node) {
         // 获取匹配表达式
         // console.log("aaaaa", this.$vm[RegExp.$1])
-        node.textContent = this.$vm[RegExp.$1];
+        // node.textContent = this.$vm[RegExp.$1];
+        this.update(node, RegExp.$1, 'text')
     }
 
     compileElement(node) {
@@ -149,5 +170,53 @@ class Compile {
                 this[dir] && this[dir](node, exp);
             }
         })
+    }
+// 所有动态绑定都需要创建更新函数以及对应watcher实例
+    update(node, exp, dir) {
+        // textUpdater
+        // 初始化
+        const fn = this[dir + 'Updater']
+        fn && fn(node, this.$vm[exp])
+
+        // 更新
+        new Watcher(this.$vm, exp, function(val) {
+            fn && fn(node, val)
+        })
+    }
+}
+
+// watcher：小秘书，界面中的一个依赖对应一个小秘书
+
+class Watcher{
+    constructor(vm, key, updateFn) {
+        this.vm = vm;
+        this.key = key;
+        this.updateFn = updateFn
+
+        // 读一次数据，触发defineReactive里面的get
+        // 在那里面加当前watcher与dep的关系
+        // Dep.target是给Dep加一个静态属性
+        Dep.target = this; // 第一步
+        this.vm[this.key]; // 第二步读一下
+        Dep.target = null;
+    }
+
+    // 管家调用
+    update() {
+        // 传入当前的最新指给更新函数
+        this.updateFn.call(this.vm, this.vm[this.key])
+    }
+}
+
+
+class Dep {
+    constructor() {
+        this.deps = []
+    }
+    addDep(watcher) {
+        this.deps.push(watcher)
+    }
+    notify() {
+        this.deps.forEach(watcher => watcher.update())
     }
 }
