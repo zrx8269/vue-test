@@ -52,6 +52,9 @@ class KVue{
 
         // 代理
         proxy(this)
+
+        // 编译
+        new Compile('#app',this);
     }
 }
 
@@ -63,10 +66,88 @@ class Observer {
 
         // 判断value是obj还是数组
         this.walk(value)
+        
     }
     walk(obj) {
         Object.keys(obj).forEach(
             key => defineReactive(obj, key, obj[key]
         ));
+    }
+}
+
+// 编译过程
+// new Compile(el, vm)
+class Compile {
+    constructor(el, vm) {
+        this.$vm = vm;
+
+        this.$el = document.querySelector(el);
+
+        if(this.$el) {
+            this.compile(this.$el);
+        }
+    }
+    compile(el) {
+        // 递归遍历el
+        // 判断其类型
+        el.childNodes.forEach(node => {
+            if(this.isElement(node)) {
+                console.log("编译元素", node.nodeName)
+                this.compileElement(node);
+            } else if(this.isInter(node)){
+                // console.log('编译插值表达式', node.textContent)
+                this.compileText(node);
+            }
+
+            if(node.childNodes) {
+                this.compile(node);
+            }
+        })
+    }
+   
+    // 元素
+    isElement(node) {
+        return node.nodeType ===1;
+    }
+
+    // 判断是否是插值表达式{{x}}
+    isInter(node) {
+        return node.nodeType === 3 && /\{\{(.*)\}\}/.test(node.textContent)
+    }
+
+    isDirective(attrName) {
+        return attrName.indexOf('k-') === 0;
+    }
+
+    // 文本指令
+    text(node, exp) {
+        node.textContent = this.$vm[exp]
+    }
+
+    html(node, exp) {
+        node.innerHTML = this.$vm[exp]
+    }
+
+    // 插值文本编译
+    compileText(node) {
+        // 获取匹配表达式
+        // console.log("aaaaa", this.$vm[RegExp.$1])
+        node.textContent = this.$vm[RegExp.$1];
+    }
+
+    compileElement(node) {
+        // 获取节点属性
+        const nodeAttrs = node.attributes;
+        Array.from(nodeAttrs).forEach(attr => {
+            // k-xxx="aaa"
+            const attrName = attr.name; // k-xxx
+            const exp = attr.value; // aaa
+// 判断这个属性类型
+            if(this.isDirective(attrName)) {
+                const dir = attrName.substr(2);
+// 执行指令
+                this[dir] && this[dir](node, exp);
+            }
+        })
     }
 }
