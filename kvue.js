@@ -169,8 +169,26 @@ class Compile {
 // 执行指令
                 this[dir] && this[dir](node, exp);
             }
+
+            // 事件处理
+            if(this.isEvent(attrName)) {
+                // @click="onClick"
+                const dir = attrName.substr(1);
+                this.eventHandler(node, exp, dir)
+            }
         })
     }
+
+    isEvent(dir) {
+        return dir.startsWith('@');
+    }
+
+    eventHandler(node, exp, dir) {
+        const fn = this.$vm.$options.methods && this.$vm.$options.methods[exp];
+        node.addEventListener(dir, fn.bind(this.$vm));
+    }
+
+
 // 所有动态绑定都需要创建更新函数以及对应watcher实例
     update(node, exp, dir) {
         // textUpdater
@@ -182,6 +200,24 @@ class Compile {
         new Watcher(this.$vm, exp, function(val) {
             fn && fn(node, val)
         })
+    }
+
+    // k-model = 'xx'
+    model(node, exp) {
+        // update只完成赋值和更新
+        this.update(node, exp, 'model')
+
+        // 事件监听
+        node.addEventListener('input', e=> {
+            this.$vm[exp] = e.target.value
+        })
+
+
+    }
+
+    modelUpdater(node, value) {
+        // 表单元素赋值
+        node.value = value
     }
 }
 
