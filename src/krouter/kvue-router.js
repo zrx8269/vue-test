@@ -37,6 +37,7 @@ KVueRouter.install = function(Vue) {
 
     // 1.挂载$router
     // 问题：install在vue.use的时候就执行了，但是vue的实例绑定在后面，怎么拿到这个实例？
+    // 全局混入的目的就是延迟下面的逻辑到router创建完毕并且附加到选项上时才执行
     Vue.mixin({
         beforeCreate() {
             // 全局混入，将来在组件实例化的时候才执行
